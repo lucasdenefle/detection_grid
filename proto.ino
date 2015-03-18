@@ -1,8 +1,8 @@
 #include <QueueArray.h>
 #include <CapacitiveSensor.h>
 
-//#define SIZE 8 
-#define SIZE 2
+#define SIZE 8 
+//#define SIZE 2
 #define SENSITIVITY 3
 #define PRECISION 50
 #define interrupt_pin 11
