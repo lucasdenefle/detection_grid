@@ -30,14 +30,14 @@ state_enum state = LISTEN;
  
 CapacitiveSensor   cs_4_2 = CapacitiveSensor(5,7);        // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
 
-//int inp[SIZE] = { 16, 17,19,20,21,22,23,24 };
-int inp[SIZE] = { 46, 42};
-//int outp[SIZE] = { 25,26,27,28,29,30,31,32};
-int outp[SIZE] = { 38,34};
-//int tab[SIZE][SIZE] = {{1,1},{1,1},{1,1},{1,1},{1,1},{1,1},{1,1},{1,1}};
-int tab[SIZE][SIZE] = {{1,1},{1,1}};
-int oldtab[SIZE][SIZE] = {{1,1},{1,1}};
-//int oldtab[SIZE][SIZE] = {{1,1},{1,1},{1,1},{1,1},{1,1},{1,1},{1,1},{1,1}};
+int inp[SIZE] = { 16, 17,19,20,21,22,23,24 };
+//int inp[SIZE] = { 46, 42};
+int outp[SIZE] = { 25,26,27,28,29,30,31,32};
+//int outp[SIZE] = { 38,34};
+int tab[SIZE][SIZE] = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
+//int tab[SIZE][SIZE] = {{1,1},{1,1}};
+//int oldtab[SIZE][SIZE] = {{1,1},{1,1}};
+int oldtab[SIZE][SIZE]  = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
 QueueArray<deplacement> array;
 
 
