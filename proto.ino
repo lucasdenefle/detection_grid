@@ -7,7 +7,7 @@
 #define PRECISION 50
 #define interrupt_pin 11
 
-
+// COMMENTAIRE INUTILE
 struct deplacement
 {
 	char type; //depose: d pose: p
