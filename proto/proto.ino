@@ -1,12 +1,12 @@
 #include <QueueArray.h>
 #include <CapacitiveSensor.h>
 
-#define SIZE 8 
-//#define SIZE 2
+//#define SIZE 8 
+#define SIZE 2
 #define SENSITIVITY 3
 #define PRECISION 50
 #define interrupt_pin 11
-#define SERIAL_SIZE 7
+#define SERIAL_SIZE 20
 
 // COMMENTAIRE INUTILE
 struct deplacement
@@ -28,21 +28,25 @@ int index=0;
 char inChar;
 char inData[SERIAL_SIZE] = "";
 
-state_enum state = LISTEN;
- String inputString = "";         // a string to hold incoming data
+state_enum state = SLEEP;
  
  
 CapacitiveSensor   cs_4_2 = CapacitiveSensor(5,7);        // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
 
-int inp[SIZE] = { 16, 17,19,20,21,22,23,24 };
-//int inp[SIZE] = { 46, 42};
-int outp[SIZE] = { 25,26,27,28,29,30,31,32};
-//int outp[SIZE] = { 38,34};
-int tab[SIZE][SIZE] = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
-//int tab[SIZE][SIZE] = {{1,1},{1,1}};
-//int oldtab[SIZE][SIZE] = {{1,1},{1,1}};
-int oldtab[SIZE][SIZE]  = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
+//int inp[SIZE] = { 16, 17,19,20,21,22,23,24 };
+int inp[SIZE] = { 46, 42};
+//int outp[SIZE] = { 25,26,27,28,29,30,31,32};
+int outp[SIZE] = { 38,34};
+//int tab[SIZE][SIZE] = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
+int tab[SIZE][SIZE] = {{1,1},{1,1}};
+int oldtab[SIZE][SIZE] = {{1,1},{1,1}};
+//int oldtab[SIZE][SIZE]  = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
 QueueArray<deplacement> array;
+
+
+
+String inputString = "";         // a string to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
 
 
 void setup()
@@ -55,17 +59,12 @@ void setup()
 		digitalWrite(outp[i], HIGH);
 	}
 
-       Serial.println("Entrée setup");
-      // attachInterrupt(0, cap_press, RISING);
-       pinMode(interrupt_pin,OUTPUT);
+      pinMode(interrupt_pin,OUTPUT);
        digitalWrite(interrupt_pin,LOW);
           cs_4_2.set_CS_AutocaL_Millis(0xFFFFFFFF);  //Calibrate the sensor... 
 	Serial.begin(9600);
-        deplacement d={'c',1,1};
-        array.push(d);
-        array.push(d);
-        array.push(d);
-        
+         // reserve 200 bytes for the inputString:
+      inputString.reserve(200);
         
         for (int i=0;i<PRECISION;i++)
         { 
@@ -73,14 +72,27 @@ void setup()
           delay(5);
          }
        moyenne=moyenne/(PRECISION/3);
-//          moyenne=50;  
-        //  Serial.println(moyenne);
 
 }
 
 
 void loop()
 {
+    if (stringComplete) {
+    Serial.println(inputString);
+    // clear the string:
+   
+         if(inputString=="sleep\n")
+        {state=SLEEP;
+        }
+        if(inputString=="listen\n")
+        {state=LISTEN;
+        }
+        
+     inputString = "";
+    stringComplete = false;
+  }
+
   switch(state){
        case LISTEN: 
          listen();
@@ -90,20 +102,23 @@ void loop()
          break;
        
   }
+  
+    releve=cs_4_2.capacitiveSensor(30);
+   if(releve > 2*moyenne)
+   {
+    cap_press();
+   }
+
 
   
 }
 void sleepfunction(){
-  while (Comp("listen")!=0) {
-             delay(500);  
-     }  
-     state=LISTEN;
-     listen();   
+ //  Serial.println("sleep");  
 }
+
 void listen()
 {
-  	while (!comptab(oldtab, tab))
-	{
+   //Serial.println("listen");
 		for (int j = 0; j<SIZE; j++)
 		{
 			for (int h = 0; h<SIZE; h++)
@@ -125,34 +140,17 @@ void listen()
 
                                  
 				digitalWrite(outp[j], HIGH);
-
-                                //releve=cs_4_2.capacitiveSensor(30);
-                                releve=40;
-                            //     Serial.println(releve);
-                                  if(releve > 200)
-                                  {
-                                  cap_press();
-                                 }
-                                 
-                                if (Comp("sleep")==0) {
-                                  state=SLEEP;
-                                  sleepfunction();
-                             
-                                }
-                                                            
-                                delay(100);
-                                 
-        
-			}
-
-
-		}
-	}
-	printtypecoup(oldtab, tab);
-	//printtab(tab);
-	copytab(oldtab, tab);
-
-        //Check si le senseur capacitif est activé
+                          }
+                  }
+                  
+	
+   if(comptab(oldtab, tab))
+  {
+ 
+  printtypecoup(oldtab, tab);
+  copytab(oldtab, tab);
+  }
+  
          
          
 }
@@ -169,7 +167,13 @@ void poparray()
 Serial.print (a.type);
 Serial.print (a.x);
 Serial.print(a.y);
+Serial.print(" ");
 }
+    
+   state=SLEEP;
+   
+                             
+                               
 }
 
 
@@ -178,10 +182,10 @@ void cap_press()
 
 {
  // digitalWrite(interrupt_pin,LOW);
-  Serial.println("Touche");
+  //Serial.println("Touche");
   
   poparray();
-  printtab(tab);
+
 }
 
 
@@ -216,25 +220,25 @@ void printtypecoup(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 				
                                 if (tab1[h][j])
 				{
-					Serial.println("Piece posee en ");
+					//Serial.println("Piece posee en ");
                                         temp.type='p';
                                       
 				}
 				else
 				{       
-      					Serial.println("Piece levee en:");
+      					//Serial.println("Piece levee en:");
                                         temp.type='d';
 
 				}
                                 temp.x=h;
                                 temp.y=j;
                                 array.push(temp);
-
+/*
 				Serial.print("x = ");
 				Serial.println(h);
 				Serial.print("y = ");
 				Serial.println(j);
-				Serial.println();
+				Serial.println();*/
 			}
 
 		}
@@ -264,7 +268,7 @@ boolean comptab(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 //retourne 1 en cas de non correspondance des tableaux
 //0 en cas de correspondance
 {
-	for (int j = 0; j<SIZE; j++)
+ 	for (int j = 0; j<SIZE; j++)
 	{
 		for (int h = 0; h<SIZE; h++)
 		{
@@ -281,27 +285,20 @@ boolean comptab(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 }
 
 
-char Comp(char* This) {
-    while (Serial.available() > 0) // Don't read unless
-                                   // there you know there is data
-    {
-        if(index < SERIAL_SIZE) // One less than the size of the array
-        {
-            inChar = Serial.read(); // Read a character
-            inData[index] = inChar; // Store it
-            index++; // Increment where to write next
-            inData[index] = '\0'; // Null terminate the string
-        }
-    }
 
-    if (strcmp(inData,This)  == 0) {
-        for (int i=0;i<SERIAL_SIZE;i++) {
-            inData[i]=0;
-        }
-        index=0;
-        return(0);
+
+void serialEvent() {
+  Serial.println("serialEvent");
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    if (inChar == '\n') {
+        stringComplete = true;
+        
     }
-    else {
-        return(1);
-    }
+  }
 }
