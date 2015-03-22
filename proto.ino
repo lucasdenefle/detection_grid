@@ -6,6 +6,7 @@
 #define SENSITIVITY 3
 #define PRECISION 50
 #define interrupt_pin 11
+#define SERIAL_SIZE 7
 
 // COMMENTAIRE INUTILE
 struct deplacement
@@ -23,6 +24,9 @@ enum state_enum{
 
 long moyenne=0;
 long releve=0;
+int index=0;
+char inChar;
+char inData[SERIAL_SIZE] = "";
 
 state_enum state = LISTEN;
  String inputString = "";         // a string to hold incoming data
@@ -63,53 +67,42 @@ void setup()
         array.push(d);
         
         
-         for (int i=0;i<PRECISION;i++)
+        for (int i=0;i<PRECISION;i++)
         { 
           moyenne=cs_4_2.capacitiveSensor(30)+moyenne;
           delay(5);
          }
-         moyenne=moyenne/(PRECISION/3);
-          Serial.println(moyenne);
+       moyenne=moyenne/(PRECISION/3);
+//          moyenne=50;  
+        //  Serial.println(moyenne);
 
 }
 
 
 void loop()
 {
-  
   switch(state){
        case LISTEN: 
          listen();
          break;
        case SLEEP:
+         sleepfunction();
          break;
        
   }
- // listen();
+
   
 }
-
-void serialEvent()
-{
-  while(Serial.available()){
-     char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    if(inputString=="l")
-        { state=LISTEN;
-        inputString="";
-        }
-    if(inputString=="s")
-         state=SLEEP;
-         inputString="";
-    }
+void sleepfunction(){
+  while (Comp("listen")!=0) {
+             delay(500);  
+     }  
+     state=LISTEN;
+     listen();   
 }
-
-
 void listen()
 {
-     Serial.println("Entrée listen");
-	while (!comptab(oldtab, tab))
+  	while (!comptab(oldtab, tab))
 	{
 		for (int j = 0; j<SIZE; j++)
 		{
@@ -133,13 +126,20 @@ void listen()
                                  
 				digitalWrite(outp[j], HIGH);
 
-                                releve=cs_4_2.capacitiveSensor(30);
+                                //releve=cs_4_2.capacitiveSensor(30);
+                                releve=40;
                             //     Serial.println(releve);
                                   if(releve > 200)
-                                  {//digitalWrite(interrupt_pin,HIGH);
+                                  {
                                   cap_press();
                                  }
                                  
+                                if (Comp("sleep")==0) {
+                                  state=SLEEP;
+                                  sleepfunction();
+                             
+                                }
+                                                            
                                 delay(100);
                                  
         
@@ -278,4 +278,30 @@ boolean comptab(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 	}
 	return 0;
 
+}
+
+
+char Comp(char* This) {
+    while (Serial.available() > 0) // Don't read unless
+                                   // there you know there is data
+    {
+        if(index < SERIAL_SIZE) // One less than the size of the array
+        {
+            inChar = Serial.read(); // Read a character
+            inData[index] = inChar; // Store it
+            index++; // Increment where to write next
+            inData[index] = '\0'; // Null terminate the string
+        }
+    }
+
+    if (strcmp(inData,This)  == 0) {
+        for (int i=0;i<SERIAL_SIZE;i++) {
+            inData[i]=0;
+        }
+        index=0;
+        return(0);
+    }
+    else {
+        return(1);
+    }
 }
