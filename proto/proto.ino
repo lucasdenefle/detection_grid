@@ -19,7 +19,12 @@ struct deplacement
 
 enum state_enum{
    LISTEN,
-   SLEEP
+   SLEEP,
+   RESET,
+   WAITING,
+   VALID,
+   INVALID,
+   UPDATE
 };
 
 long moyenne=0;
@@ -40,6 +45,7 @@ int outp[SIZE] = { 38,34};
 //int tab[SIZE][SIZE] = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
 int tab[SIZE][SIZE] = {{1,1},{1,1}};
 int oldtab[SIZE][SIZE] = {{1,1},{1,1}};
+int goodtab[SIZE][SIZE];
 //int oldtab[SIZE][SIZE]  = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
 QueueArray<deplacement> array;
 
@@ -88,18 +94,47 @@ void loop()
         if(inputString=="listen\n")
         {state=LISTEN;
         }
+        if(inputString=="valid\n" && state==WAITING)
+        {state=VALID;
+        }
+        if(inputString=="invalid\n"  && state==WAITING)
+        {state=INVALID;
+        }
+        if(inputString=="update\n")
+        {state=UPDATE;
+        }
+        
         
      inputString = "";
-    stringComplete = false;
+     stringComplete = false;
   }
 
   switch(state){
+       case UPDATE:
+         //Scan la matrice et remplit goodtab
+         scantab(goodtab);
+         break;
        case LISTEN: 
          listen();
          break;
        case SLEEP:
          sleepfunction();
          break;
+       case VALID:
+         //valide le move 
+         copytab(goodtab,tab);
+         state=SLEEP;
+         break;
+       case INVALID:
+         //attend que le tableau revienne à son dernier état correct
+         if(!isValidTab()){
+           state=LISTEN;
+         }
+         break;
+       case WAITING:
+         //attend que le rasp communique "valid" ou "invalid"
+         break;
+         
        
   }
   
@@ -113,13 +148,28 @@ void loop()
   
 }
 void sleepfunction(){
- //  Serial.println("sleep");  
 }
 
 void listen()
 {
    //Serial.println("listen");
-		for (int j = 0; j<SIZE; j++)
+
+    scantab(tab);	
+   if(comptab(oldtab, tab))
+  {
+ 
+  printtypecoup(oldtab, tab);
+  copytab(oldtab, tab);
+  }
+  
+         
+         
+}
+
+
+void scantab(int tab[SIZE][SIZE])
+{
+     	for (int j = 0; j<SIZE; j++)
 		{
 			for (int h = 0; h<SIZE; h++)
 			{
@@ -142,19 +192,9 @@ void listen()
 				digitalWrite(outp[j], HIGH);
                           }
                   }
-                  
-	
-   if(comptab(oldtab, tab))
-  {
- 
-  printtypecoup(oldtab, tab);
-  copytab(oldtab, tab);
-  }
+              
   
-         
-         
 }
-
 
 //Depile la liste de coups dans serial
 void poparray()
@@ -170,7 +210,7 @@ Serial.print(a.y);
 Serial.print(" ");
 }
     
-   state=SLEEP;
+   state=WAITING;
    
                              
                                
@@ -181,11 +221,7 @@ Serial.print(" ");
 void cap_press()
 
 {
- // digitalWrite(interrupt_pin,LOW);
-  //Serial.println("Touche");
-  
   poparray();
-
 }
 
 
@@ -285,10 +321,24 @@ boolean comptab(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 }
 
 
+void isValidTab()
+{
+  int temptab[SIZE][SIZE];
+  scantab(temptab);
+  if(comptab(temptab,goodtab)){
+       //Tableaux différents
+       return false;
+   }
+  else{ //Tableaux identiques
+      return true;
+    }
+  
+}
+
 
 
 void serialEvent() {
-  Serial.println("serialEvent");
+  //Serial.println("serialEvent");
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
