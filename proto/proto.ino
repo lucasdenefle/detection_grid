@@ -11,7 +11,7 @@
 // COMMENTAIRE INUTILE
 struct deplacement
 {
-	char type; //depose: d pose: p
+	char type; //up: u down: d
 	int x;
 	int y;
 };
@@ -119,7 +119,7 @@ void loop()
          scantab(goodtab);
          break;
        case LISTEN: 
-       //  Serial.println("listen");
+         //Serial.println("listen");
          listen();
          releve=cs_4_2.capacitiveSensor(30);
          if(releve > 2*moyenne){
@@ -207,21 +207,26 @@ void poparray()
 {
   
   deplacement a={'l',1,1};
+  char x;
   while (!array.isEmpty ())
   {
     a=array.pop();   
 Serial.print (a.type);
-Serial.print ((char)(a.x+'a'));
-Serial.print( a.y);
+x=numbertoletter(a.x);
+Serial.print (x);
+Serial.print( a.y+1);
 Serial.print(" ");
 }
    state=WAITING;
-   
-                             
+    Serial.println();   
+
+delay(100);    
                                
 }
 
-
+char numbertoletter(int a){
+    return 'a'+a;
+}
 
 void cap_press()
 
@@ -262,13 +267,13 @@ void printtypecoup(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
                                 if (tab1[h][j])
 				{
 					//Serial.println("Piece posee en ");
-                                        temp.type='p';
+                                        temp.type='d';
                                       
 				}
 				else
 				{       
       					//Serial.println("Piece levee en:");
-                                        temp.type='d';
+                                        temp.type='u';
 
 				}
                                 temp.x=h;
