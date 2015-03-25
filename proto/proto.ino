@@ -78,14 +78,14 @@ void setup()
           delay(5);
          }
        moyenne=moyenne/(PRECISION/3);
-
+       
 }
 
 
 void loop()
 {
     if (stringComplete) {
-    Serial.println(inputString);
+   // Serial.println(inputString);
     // clear the string:
    
          if(inputString=="sleep\n")
@@ -103,6 +103,9 @@ void loop()
         if(inputString=="update\n")
         {state=UPDATE;
         }
+        if(inputString=="waiting\n")
+        {state=WAITING;
+        }
         
         
      inputString = "";
@@ -112,37 +115,42 @@ void loop()
   switch(state){
        case UPDATE:
          //Scan la matrice et remplit goodtab
+         //Serial.println("update");
          scantab(goodtab);
          break;
        case LISTEN: 
+       //  Serial.println("listen");
          listen();
+         releve=cs_4_2.capacitiveSensor(30);
+         if(releve > 2*moyenne){
+         cap_press();}
          break;
        case SLEEP:
+        //Serial.println("sleep");
          sleepfunction();
          break;
        case VALID:
          //valide le move 
+         //Serial.println("valid");
          copytab(goodtab,tab);
          state=SLEEP;
          break;
        case INVALID:
+       //  Serial.println("invalid");
          //attend que le tableau revienne à son dernier état correct
          if(!isValidTab()){
            state=LISTEN;
          }
          break;
        case WAITING:
+         // Serial.println("update");
          //attend que le rasp communique "valid" ou "invalid"
          break;
          
        
   }
   
-    releve=cs_4_2.capacitiveSensor(30);
-   if(releve > 2*moyenne)
-   {
-    cap_press();
-   }
+   
 
 
   
@@ -152,13 +160,11 @@ void sleepfunction(){
 
 void listen()
 {
-   //Serial.println("listen");
 
     scantab(tab);	
    if(comptab(oldtab, tab))
   {
- 
-  printtypecoup(oldtab, tab);
+   printtypecoup(oldtab, tab);
   copytab(oldtab, tab);
   }
   
@@ -169,6 +175,7 @@ void listen()
 
 void scantab(int tab[SIZE][SIZE])
 {
+  
      	for (int j = 0; j<SIZE; j++)
 		{
 			for (int h = 0; h<SIZE; h++)
@@ -192,8 +199,7 @@ void scantab(int tab[SIZE][SIZE])
 				digitalWrite(outp[j], HIGH);
                           }
                   }
-              
-  
+
 }
 
 //Depile la liste de coups dans serial
@@ -205,11 +211,10 @@ void poparray()
   {
     a=array.pop();   
 Serial.print (a.type);
-Serial.print (a.x);
-Serial.print(a.y);
+Serial.print ((char)(a.x+'a'));
+Serial.print( a.y);
 Serial.print(" ");
 }
-    
    state=WAITING;
    
                              
@@ -321,7 +326,7 @@ boolean comptab(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 }
 
 
-void isValidTab()
+boolean isValidTab()
 {
   int temptab[SIZE][SIZE];
   scantab(temptab);
@@ -344,11 +349,11 @@ void serialEvent() {
     char inChar = (char)Serial.read();
     // add it to the inputString:
     inputString += inChar;
+
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
     if (inChar == '\n') {
         stringComplete = true;
-        
     }
   }
 }
