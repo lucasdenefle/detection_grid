@@ -79,7 +79,7 @@ void setup()
 void loop()
 {
     if (stringComplete) {
-    Serial.println(inputString);
+    //Serial.println(inputString);
     // clear the string:
    
          if(inputString=="sleep\n")
@@ -288,7 +288,7 @@ boolean comptab(int tab1[SIZE][SIZE], int tab2[SIZE][SIZE])
 
 
 void serialEvent() {
-  Serial.println("serialEvent");
+  //Serial.println("serialEvent");
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
