@@ -1,8 +1,8 @@
 #include <QueueArray.h>
 #include <CapacitiveSensor.h>
 
-//#define SIZE 8 
-#define SIZE 2
+#define SIZE 8 
+//#define SIZE 2
 #define SENSITIVITY 3
 #define PRECISION 50
 #define interrupt_pin 11
@@ -38,15 +38,15 @@ state_enum state = SLEEP;
  
 CapacitiveSensor   cs_4_2 = CapacitiveSensor(5,7);        // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
 
-//int inp[SIZE] = { 16, 17,19,20,21,22,23,24 };
-int inp[SIZE] = { 46, 42};
-//int outp[SIZE] = { 25,26,27,28,29,30,31,32};
-int outp[SIZE] = { 38,34};
-//int tab[SIZE][SIZE] = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
-int tab[SIZE][SIZE] = {{1,1},{1,1}};
+int inp[SIZE] = { 41,45,49,53,51,47,43,39 };
+//int inp[SIZE] = { 46, 42};
+int outp[SIZE] = { 40,44,48,52,50,46,42,38};
+//int outp[SIZE] = { 38,34};
+int tab[SIZE][SIZE] = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
+//int tab[SIZE][SIZE] = {{1,1},{1,1}};
 int oldtab[SIZE][SIZE] = {{1,1},{1,1}};
-int goodtab[SIZE][SIZE];
-//int oldtab[SIZE][SIZE]  = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
+//int goodtab[SIZE][SIZE];
+int oldtab[SIZE][SIZE]  = {{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1}};
 QueueArray<deplacement> array;
 
 
@@ -77,8 +77,8 @@ void setup()
           moyenne=cs_4_2.capacitiveSensor(30)+moyenne;
           delay(5);
          }
-       moyenne=moyenne/(PRECISION/3);
-       
+     //  moyenne=moyenne/(PRECISION/3);
+       moyenne=0;
 }
 
 
@@ -121,9 +121,10 @@ void loop()
        case LISTEN: 
          //Serial.println("listen");
          listen();
-         releve=cs_4_2.capacitiveSensor(30);
+         /*releve=cs_4_2.capacitiveSensor(30);
          if(releve > 2*moyenne){
-         cap_press();}
+         cap_press();}*/
+         
          break;
        case SLEEP:
         //Serial.println("sleep");
@@ -167,6 +168,8 @@ void listen()
    printtypecoup(oldtab, tab);
   copytab(oldtab, tab);
   }
+  printtab(tab);
+  delay(1);
   
          
          
