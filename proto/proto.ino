@@ -29,7 +29,8 @@ enum state_enum {
   TEST,
   INIT,
   TEST_LED,
-  TEST_CAPT
+  TEST_CAPT,
+  TEST_RASP
 };
 
 
@@ -40,13 +41,13 @@ char inChar;
 char inData[SERIAL_SIZE] = "";
 int player = 1;
 
-state_enum state = INIT;
+state_enum state = SLEEP;
 
 
-CapacitiveSensor   cs_4_2 = CapacitiveSensor(5, 7);       // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
+CapacitiveSensor   cs_4_2 = CapacitiveSensor(52, 48);       // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
 
 int inp[SIZE] = { 41, 45, 49, 53, 51, 47, 43, 39 };
-int LED[2] = {15, 17};
+int LED[2] = {46, 44};
 //int inp[SIZE] = { 46, 42};
 int outp[SIZE] = { 35, 31, 27, 23, 25, 29, 33, 37};
 //int outp[SIZE] = { 38,34};
@@ -100,46 +101,51 @@ void loop()
     // Serial.println(inputString);
     // clear the string:
 
-    if (inputString == "sleep\n")
+    if (inputString == "sleep$")
     { state = SLEEP;
     }
-    if (inputString == "listen 1\n")
+    if (inputString == "listen 1$")
     {
       player = 0;
       turn_off_all_leds();
       turn_on_led();
       state = LISTEN;
     }
-    if (inputString == "listen 2\n")
+    if (inputString == "listen 2$")
     {
       player = 1;
       turn_off_all_leds();
       turn_on_led();
       state = LISTEN;
     }
-    if (inputString == "valid\n")
+    if (inputString == "valid$")
     { state = VALID;
     }
-    if (inputString == "invalid\n")
+    if (inputString == "invalid$")
     { state = INVALID;
     }
-    if (inputString == "update\n")
+    if (inputString == "update$")
     { state = UPDATE;
     }
-    if (inputString == "waiting\n")
+    if (inputString == "waiting$")
     { state = WAITING;
     }
-    if (inputString == "test\n")
+    if (inputString == "test$")
     { state = TEST;
     }
-    if (inputString == "init\n")
+    if (inputString == "init$")
     { state = INIT;
     }
-    if (inputString == "test_led\n")
+    if (inputString == "test_led$")
     { state = TEST_LED;
+     
     }
-    if (inputString == "test_capt\n")
+    if (inputString == "test_capt$")
     { state = TEST_CAPT;
+    }
+    
+    if (inputString == "test_rasp$")
+    { state = TEST_RASP;
     }
 
 
@@ -206,7 +212,10 @@ void loop()
     //delay(500);
 
     break;
-
+  case TEST_RASP:
+  // Serial.println("Coucou");
+   //delay(1000);
+   break;
   case TEST_LED:
     blink_led();
     turn_off_all_leds();
@@ -402,7 +411,7 @@ void serialEvent() {
 
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
-    if (inChar == '\n') {
+    if (inChar == '$') {
       stringComplete = true;
     }
   }
